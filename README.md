@@ -1,5 +1,5 @@
 
-## How git o extract runs
+## How to extract runs
 
 Check the following link: https://docs.google.com/spreadsheets/d/1M0jMwS33TttGbs-REGRAopI9uiohMjcxCvUPJjYtd2g/edit?gid=1816173087#gid=1816173087
 
