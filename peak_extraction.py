@@ -54,32 +54,30 @@ if __name__=="__main__":
     folder_base = '/Users/emiliebertholet/cernbox/coldbox_data'
 
     
-    save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutrons
-              output_file='data_tests/peaks_neutrons_wlenNone.pkl', 
-              wlen=None)
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutrons
+    #           output_file='data_tests/peaks_neutrons_wlenNone.pkl', 
+    #           wlen=None)
 
-    save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
-            output_file='data_tests/peaks_neutronsSel_wlenNone.pkl', 
-            wlen=None, cut=(3000,6000))
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
+    #         output_file='data_tests/peaks_neutronsSel_wlenNone.pkl', 
+    #         wlen=None, cut=(3000,6000))
     
-    save_file(intput_file=f'{folder_base}/adc_data_run_25066_ch_40_all.npy', # cosmics
-              output_file='data_tests/peaks_cosmics_wlenNone.pkl', 
-              wlen=None)
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25066_ch_40_all.npy', # cosmics
+    #           output_file='data_tests/peaks_cosmics_wlenNone.pkl', 
+    #           wlen=None)
 
-    save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutrons
-              output_file='data_tests/peaks_neutrons_wlen500.pkl', 
-              wlen=500)
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutrons
+    #           output_file='data_tests/peaks_neutrons_wlen500.pkl', 
+    #           wlen=500)
 
-    save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
-            output_file='data_tests/peaks_neutronsSel_wlen500.pkl', 
-            wlen=None, cut=(3000,6000))
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
+    #         output_file='data_tests/peaks_neutronsSel_wlen500.pkl', 
+    #         wlen=None, cut=(3000,6000))
     
-    save_file(intput_file=f'{folder_base}/adc_data_run_25066_ch_40_all.npy', # cosmics
-              output_file='data_tests/peaks_cosmics_wlen500.pkl', 
-              wlen=500)
-
-
-
+    
+    # save_file(intput_file=f'{folder_base}/adc_data_run_25066_ch_40_all.npy', # cosmics
+    #           output_file='data_tests/peaks_cosmics_wlen500.pkl', 
+    #           wlen=500)
 
     # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutrons
     #           output_file='data_tests/peaks_neutrons_wlenNone_prom500.pkl', 
