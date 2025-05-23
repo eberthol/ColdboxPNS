@@ -160,24 +160,26 @@ if __name__=="__main__":
     sel_dir = '/Users/emiliebertholet/cernbox/coldbox_data/selected_waveforms'
 
     # ##### cosmics
-    # filename = 'waveforms_cosmics_wlenNone_prom500.pkl'
-    # with open(f'{raw_dir}/{filename}', 'rb') as file:
-    #     raw_dict = pickle.load(file)
-
-    # sel = waveform_selection(raw_dict, ADCsat=16383, width_range=(100, 500))
-    # output_file = filename.replace('waveforms', 'selection')
-    # with open(f'{sel_dir}/{output_file}', 'wb') as file:
-    #     pickle.dump(sel, file)
-
-    ##### PNS
-    filename = 'waveforms_neutrons_wlenNone_prom500.pkl'
+    filename = 'waveforms_cosmics_wlenNone_prom500.pkl'
     with open(f'{raw_dir}/{filename}', 'rb') as file:
         raw_dict = pickle.load(file)
 
-    sel = waveform_selection(raw_dict, ADCsat=15363, width_range=(100, 500)) ## ADCsat different for PNS
-    output_file = filename.replace('waveforms_neutrons', 'selection_PNS')
-    with open(f'{sel_dir}/{output_file}', 'wb') as file:
-        pickle.dump(sel, file)
+    sel = waveform_selection(raw_dict, ADCsat=16383, width_range=(100, 500))
+    output_file = filename.replace('waveforms', 'selection')
+    print(sel.keys())
+    # with open(f'{sel_dir}/{output_file}', 'wb') as file:
+    # # with open(f'{output_file}', 'wb') as file:
+    #     pickle.dump(sel, file)
+
+    ##### PNS
+    # filename = 'waveforms_neutrons_wlenNone_prom500.pkl'
+    # with open(f'{raw_dir}/{filename}', 'rb') as file:
+    #     raw_dict = pickle.load(file)
+
+    # sel = waveform_selection(raw_dict, ADCsat=15363, width_range=(100, 500)) ## ADCsat different for PNS
+    # output_file = filename.replace('waveforms_neutrons', 'selection_PNS')
+    # with open(f'{sel_dir}/{output_file}', 'wb') as file:
+    #     pickle.dump(sel, file)
 
     # ##### PNS: neutron selection
     # filename = 'waveforms_neutrons_wlenNone_prom500.pkl'
