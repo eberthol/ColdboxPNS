@@ -83,30 +83,62 @@ def save_file(intput_file, output_file, wlen, prominence=200, cut=None):
 
 if __name__=="__main__":
     folder_base = '/Users/emiliebertholet/cernbox/coldbox_data'
+    folder_out = '/Users/emiliebertholet/cernbox/coldbox_data/raw_waveforms'
+
+    sample = 'PNS'
+    ch, run = '37', '25050'
+    intput_file = f'{folder_base}/adc_data_run_{run}_ch_{ch}_all.npy'
+    save_file(intput_file=intput_file, 
+              output_file=f'{folder_out}/waveforms_{run}ch{ch}_{sample}_wlenNone_prom500.pkl', 
+              wlen=None, prominence=500)
+    ch, run = '37', '25068'
+    intput_file = f'{folder_base}/adc_data_run_{run}_ch_{ch}_all.npy'
+    save_file(intput_file=intput_file, 
+              output_file=f'{folder_out}/waveforms_{run}ch{ch}_{sample}_wlenNone_prom500.pkl', 
+              wlen=None, prominence=500)
+    ch, run = '37', '25071'
+    intput_file = f'{folder_base}/adc_data_run_{run}_ch_{ch}_all.npy'
+    save_file(intput_file=intput_file, 
+              output_file=f'{folder_out}/waveforms_{run}ch{ch}_{sample}_wlenNone_prom500.pkl', 
+              wlen=None, prominence=500)
+    
+    sample = 'cosmics'
+    ch, run = '37', '25087'
+    intput_file = f'{folder_base}/adc_data_run_{run}_ch_{ch}_all.npy'
+    save_file(intput_file=intput_file, 
+              output_file=f'{folder_out}/waveforms_{run}ch{ch}_{sample}_wlenNone_prom500.pkl', 
+              wlen=None, prominence=500)
+
+
+
+
+
+
+
 
     ##### neutrons
-    sample = 'neutrons'
-    intput_file = f'{folder_base}/adc_data_run_25036_ch_40_all.npy'
+    # sample = 'neutrons'
+    # intput_file = f'{folder_base}/adc_data_run_25036_ch_40_all.npy'
 
     ##### cosmics
     # sample = 'cosmics'
     # intput_file = f'{folder_base}/adc_data_run_25066_ch_40_all.npy'
 
-    save_file(intput_file=intput_file, 
-              output_file=f'data_tests/waveforms_{sample}_wlenNone_prom200.pkl', 
-              wlen=None, prominence=200)
+    # save_file(intput_file=intput_file, 
+    #           output_file=f'data_tests/waveforms_{sample}_wlenNone_prom200.pkl', 
+    #           wlen=None, prominence=200)
     
-    save_file(intput_file=intput_file, 
-              output_file=f'data_tests/waveforms_{sample}_wlen500_prom200.pkl', 
-              wlen=500, prominence=200)
+    # save_file(intput_file=intput_file, 
+    #           output_file=f'data_tests/waveforms_{sample}_wlen500_prom200.pkl', 
+    #           wlen=500, prominence=200)
     
-    save_file(intput_file=intput_file, 
-              output_file=f'data_tests/waveforms_{sample}_wlenNone_prom500.pkl', 
-              wlen=None, prominence=500)
+    # save_file(intput_file=intput_file, 
+    #           output_file=f'data_tests/waveforms_{sample}_wlenNone_prom500.pkl', 
+    #           wlen=None, prominence=500)
     
-    save_file(intput_file=intput_file, 
-              output_file=f'data_tests/waveforms_{sample}_wlen500_prom500.pkl', 
-              wlen=500, prominence=500)
+    # save_file(intput_file=intput_file, 
+    #           output_file=f'data_tests/waveforms_{sample}_wlen500_prom500.pkl', 
+    #           wlen=500, prominence=500)
 
 
 
@@ -115,9 +147,6 @@ if __name__=="__main__":
     # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
     #         output_file='data_tests/peaks_neutronsSel_wlenNone.pkl', 
     #         wlen=None, cut=(3000,6000))
-    
-
-
 
     # save_file(intput_file=f'{folder_base}/adc_data_run_25036_ch_40_all.npy', # neutron selection
     #         output_file='data_tests/peaks_neutronsSel_wlen500.pkl', 
