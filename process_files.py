@@ -70,6 +70,25 @@ def subtract_pedestals_all_channels_np(akw, nmax=None, to_h5=False, filename='da
                 "pedestals": pedestals_np,
             }, f)
 
+def estimate_baseline_stability(waveform, max_deviation=5):
+    median = np.median(waveform)
+    mad = np.median(np.abs(waveform - median))
+
+    quiet = np.abs(waveform - median) < max_deviation * mad
+
+    if not np.any(quiet):  # if mask is empty
+        return np.nan, np.nan, quiet ### maybe should return an arbitrary high number instead (e.g. 99999)
+
+    baseline = np.mean(waveform[quiet])
+    rms = np.std(waveform[quiet])
+    return baseline, rms, quiet
+
+def add_baseline_stability_estimate(sample):
+    wfs = sample['waveformsADC']
+    Nevents, _, Nchannels, _ = get_info(sample, display=False)
+    sample['baseline_stability'] = np.array([[estimate_baseline_stability(wfs[trigID, chID], max_deviation=5)[1] for chID in range(Nchannels)] for trigID in range(Nevents)])
+
+
 def main(sample, runNumber, savetoh5, input_files):
     for filepath in input_files:
         print('process file', filepath)
@@ -83,6 +102,7 @@ def main(sample, runNumber, savetoh5, input_files):
             akw = read_root_files(filepath, cosmics=True)
             print('\nCosmics')
         get_info(akw, display=True)
+        # add_baseline_stability_estimate(sample) # to try
         if savetoh5:
             subtract_pedestals_all_channels_np(akw, nmax=None, to_h5=True, filename=f'{filepath}/{outputName}.h5')
         else:
@@ -124,10 +144,10 @@ if __name__=="__main__":
     sample = 'pns'
     if sample=='pns':
         runNumber = 25036
-        output_name = 'pns_nTuples_r{runNumber}_0-30.h5'
+        output_name = f'pns_nTuples_r{runNumber}_0-30'
     elif sample=='cos':
         runNumber = 25004
-        output_name = 'cos_nTuples_r{runNumber}_0-30.h5'
+        output_name =f'cos_nTuples_r{runNumber}_0-30'
 
 
     files = sorted( glob.glob(os.path.join(filepath, f"{sample}_nTuples_r{runNumber}_*.h5")) )
