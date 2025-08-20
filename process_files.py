@@ -37,42 +37,9 @@ def get_info(akw, display=False):
         print(' max height', int(np.max(maxima)) )
     return Nevents, TrigWindow, Nchannels, maxima
 
-def subtract_pedestals_all_channels_np(akw, nmax=None, to_h5=False, filename='data'):
-    waveforms = akw['waveformsADC']
-    nevents   = len(waveforms) if nmax is None else min(nmax, len(waveforms))
-    waveforms = waveforms[:nevents]
-
-    # Determine number of channels and maximum waveform length
-    n_channels = max(len(evt) for evt in waveforms)
-    max_len    = max(len(ch) for evt in waveforms for ch in evt)
-
-    # Preallocate output arrays
-    waveformsADC_np = np.full((nevents, n_channels, max_len), np.nan, dtype=np.int32)
-    pedestals_np = np.zeros((nevents, n_channels), dtype=np.int32)
-
-    for i_evt, evt in enumerate(tqdm(waveforms, desc="Subtracting pedestals")):
-        for i_ch, ch in enumerate(evt):
-            ch_np = np.asarray(ch, dtype=np.int32)
-            hist = np.bincount(ch_np)
-            pedestal = np.argmax(hist)
-            pedestals_np[i_evt, i_ch] = pedestal
-            sub = ch_np - pedestal
-            waveformsADC_np[i_evt, i_ch, :len(ch_np)] = ch_np
-
-    if to_h5:
-        with h5py.File(filename, "w") as f:
-            f.create_dataset("waveformsADC", data=waveformsADC_np, compression="gzip")
-            f.create_dataset("pedestals", data=pedestals_np)
-    else:
-        with open(filename, "wb") as f:
-            pickle.dump({
-                "waveformsADC": waveformsADC_np,
-                "pedestals": pedestals_np,
-            }, f)
-
 def estimate_baseline_stability(waveform, max_deviation=5):
     median = np.median(waveform)
-    mad = np.median(np.abs(waveform - median))
+    mad    = np.median(np.abs(waveform - median))
 
     quiet = np.abs(waveform - median) < max_deviation * mad
 
@@ -83,18 +50,48 @@ def estimate_baseline_stability(waveform, max_deviation=5):
     rms = np.std(waveform[quiet])
     return baseline, rms, quiet
 
-def add_baseline_stability_estimate(sample):
-    wfs = sample['waveformsADC']
-    Nevents, _, Nchannels, _ = get_info(sample, display=False)
-    sample['baseline_stability'] = np.array([[estimate_baseline_stability(wfs[trigID, chID], max_deviation=5)[1] for chID in range(Nchannels)] for trigID in range(Nevents)])
+def subtract_pedestals_all_channels_np(akw):
+    waveforms = akw['waveformsADC']
+    nevents   = len(waveforms)
+    waveforms = waveforms[:nevents]
 
+    # Determine number of channels and maximum waveform length
+    n_channels = max(len(evt) for evt in waveforms)
+    max_len    = max(len(ch) for evt in waveforms for ch in evt)
 
-def main(sample, runNumber, savetoh5, input_files):
+    output = {}
+    for chID in range(n_channels):
+        waveformsADC_np = np.full((nevents, max_len), np.nan, dtype=np.int32)
+        pedestals_np = np.zeros(nevents, dtype=np.int32)
+        baseline_stability_np_ch = np.full(nevents, np.nan, dtype=np.float32)
+
+        for evtID, evt in enumerate(tqdm(waveforms, desc=f"Subtracting pedestals ch{chID}")):
+            ch_np = np.asarray(evt[chID], dtype=np.int32)
+
+            # pedestal subtraction
+            hist = np.bincount(ch_np)
+            pedestal = np.argmax(hist)
+            pedestals_np[evtID] = pedestal
+            sub = ch_np - pedestal
+            waveformsADC_np[evtID, :len(ch_np)] = sub  
+
+            # baseline stability estimate
+            _, rms, _ = estimate_baseline_stability(sub)
+            baseline_stability_np_ch[evtID] = rms
+
+        output[f"ch{chID}"] = {
+                "waveforms": waveformsADC_np, ## pedestal subtracted waveforms
+                "pedestals": pedestals_np,
+                "baseline_stability": baseline_stability_np_ch
+            }
+    return output
+
+def main(sample, runNumber, n_channels, input_files, output_directory):
     for filepath in input_files:
         print('process file', filepath)
         info=filepath.split('/')[-1].split('.')[0].split('_')
         id_first, id_last = info[-2], info[-1]
-        outputName = f'{sample}_nTuples_r{runNumber}_{id_first}-{id_last}'
+        outputName = f'{sample}_nTuples_r{runNumber}_{id_first}-{id_last}.root'
         if sample=='pns':
             akw = read_root_files(filepath, cosmics=False)
             print('\nPNS')
@@ -102,62 +99,62 @@ def main(sample, runNumber, savetoh5, input_files):
             akw = read_root_files(filepath, cosmics=True)
             print('\nCosmics')
         get_info(akw, display=True)
-        # add_baseline_stability_estimate(sample) # to try
-        if savetoh5:
-            subtract_pedestals_all_channels_np(akw, nmax=None, to_h5=True, filename=f'{filepath}/{outputName}.h5')
-        else:
-            subtract_pedestals_all_channels_np(akw, nmax=None, to_h5=False, filename=f'{filepath}/{outputName}.pkl')
 
+        output_dict = subtract_pedestals_all_channels_np(akw)
+
+        with uproot.recreate(f"{output_directory}/{outputName}") as file:
+            for i in range(n_channels):
+                file[f"ch{i}"] = output_dict[f"ch{i}"]
+        
 def read_dataset(file, key):
     with h5py.File(file, "r") as h5:
         return h5[key][:]
     
 if __name__=="__main__":
     cernbox = '/Users/emiliebertholet/cernbox/coldbox_data'
-    filepath = f'{cernbox}/anaCRP_files'
+    filepath = f'{cernbox}/anaCRP_files/raw_files'
+    output_directory = f'{cernbox}/waveform_nTuples'
 
     ####### file by file
-    sample = 'cos'
-
-    # if sample=='pns':
-    #     runNumber = 25036
-    #     # savetoh5 = True
-    #     input_files = [
-    #         f'{filepath}/ana_pns_r{runNumber}_small_0_7.root', 
-    #         f'{filepath}/ana_pns_r{runNumber}_small_8_16.root', 
-    #         f'{filepath}/ana_pns_r{runNumber}_small_17_30.root'
-    #     ]
-    # elif sample=='cos':
-    #     runNumber = 25004
-    #     # savetoh5 = True
-    #     input_files = [
-    #         f'{filepath}/ana_cosmic_r{runNumber}_small_0_6.root', 
-    #         f'{filepath}/ana_cosmic_r{runNumber}_small_7_15.root', 
-    #         f'{filepath}/ana_cosmic_r{runNumber}_small_16_30.root'
-    #     ]
-    # else:
-    #     sys.exit('error')
-
-    # main(sample, runNumber, savetoh5, input_files)
-
-    ####### merge files
     sample = 'pns'
+
     if sample=='pns':
         runNumber = 25036
-        output_name = f'pns_nTuples_r{runNumber}_0-30'
+        # input_files = [ f'{filepath}/{sample}_r{runNumber}/ana_pns_small_{i*10}_{i*10+9}.root' for i in range(5, 22)]
+        input_files = [ f'{filepath}/{sample}_r{runNumber}/ana_pns_small_{i*10}_{i*10+9}.root' for i in range(6, 10)]
+
+
+
     elif sample=='cos':
         runNumber = 25004
-        output_name =f'cos_nTuples_r{runNumber}_0-30'
+        # input_files = [ f'{filepath}/{sample}_r{runNumber}/ana_cos_small_{i*10}_{i*10+9}.root' for i in range(5, 23)]
+        input_files = [ f'{filepath}/{sample}_r{runNumber}/ana_cos_small_{i*10}_{i*10+9}.root' for i in range(6, 10)]
+
+    else:
+        sys.exit('error')
+
+    n_channels = 12
+    # print(input_files)
+    main(sample, runNumber,  n_channels, input_files, output_directory)
+
+    ####### merge files
+    # sample = 'pns'
+    # if sample=='pns':
+    #     runNumber = 25036
+    #     output_name = f'pns_nTuples_r{runNumber}_0-30'
+    # elif sample=='cos':
+    #     runNumber = 25004
+    #     output_name =f'cos_nTuples_r{runNumber}_0-30'
 
 
-    files = sorted( glob.glob(os.path.join(filepath, f"{sample}_nTuples_r{runNumber}_*.h5")) )
-    pns = {
-        "waveformsADC": np.vstack([read_dataset(f, "waveformsADC") for f in files]),
-        "pedestals": np.concatenate([read_dataset(f, "pedestals") for f in files])
-    }
-    with h5py.File(f"{filepath}/{output_name}.h5", "w") as h5:
-        for key, arr in pns.items():
-            h5.create_dataset(key, data=arr)
+    # files = sorted( glob.glob(os.path.join(filepath, f"{sample}_nTuples_r{runNumber}_*.h5")) )
+    # pns = {
+    #     "waveformsADC": np.vstack([read_dataset(f, "waveformsADC") for f in files]),
+    #     "pedestals":    np.concatenate([read_dataset(f, "pedestals") for f in files])
+    # }
+    # with h5py.File(f"{filepath}/{output_name}.h5", "w") as h5:
+    #     for key, arr in pns.items():
+    #         h5.create_dataset(key, data=arr)
     
     
 
