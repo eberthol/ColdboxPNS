@@ -30,6 +30,10 @@ The SPE template is stored in the histogram SPEtemplate_ns.
 
 Jupyter notebook: spe_deconvolution.ipynb
 
+Input .root file can found:
+--------------------------------------------------------------
+/exp/dune/data/users/rlalnunt/vdcoldcox/ana_pns/cosmic_*.root
+---------------------------------------------------------------
 This notebook reads the SPE templates and applies Wiener-like deconvolution to optical waveforms from PNS and cosmic datasets.
 
 The analysis includes:
@@ -45,6 +49,7 @@ SPE deconvolution: Apply frequency-domain regularized deconvolution using the co
 Waveform reconstruction: Convolve the recovered signal with the SPE template and compare it with the measured ADC waveform.
 
 Pulse-shape discrimination: Calculate the prompt-light fraction:
+
 
 [
 F_{\mathrm{prompt}}=\frac{Q_{\mathrm{prompt}}}{Q_{\mathrm{total}}}
